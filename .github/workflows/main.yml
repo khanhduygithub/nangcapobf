@@ -1,0 +1,36 @@
+name: Extract Zip
+
+on: [workflow_dispatch]
+
+jobs:
+  extract:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: List files
+      run: ls -la
+    
+    - name: Find zip file
+      run: find . -name "*.zip" -type f
+    
+    - name: Extract zip
+      run: |
+        mkdir -p output
+        find . -name "*.zip" -type f -exec unzip -o {} -d output/ \;
+    
+    - name: List extracted files
+      run: find output/ -type f
+    
+    - name: Show file contents
+      run: |
+        find output/ -name "*.java" -o -name "*.kt" -o -name "*.xml" -o -name "*.txt" | while read f; do
+          echo "=== $f ==="
+          cat "$f"
+        done
+    
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: extracted-files
+        path: output/
