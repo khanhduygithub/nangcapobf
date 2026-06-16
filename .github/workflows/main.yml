@@ -1,23 +1,39 @@
-name: Extract and Show on GitHub
-
+name: List All Files for Claude
 on: [workflow_dispatch]
-
-permissions:
-  contents: write
-
 jobs:
-  extract:
+  list:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
     - uses: actions/checkout@v4
     
-    - name: Extract zip
-      run: unzip -o binscurez.zip -d ./
-    
-    - name: Commit extracted files
+    - name: List all files with content
       run: |
-        git config user.name "github-actions"
-        git config user.email "actions@github.com"
-        git add .
-        git commit -m "Extracted files" || echo "No changes"
+        echo "=== ALL FILES ==="
+        find . -type f | sort
+        echo ""
+        echo "=== KOTLIN FILES ==="
+        find . -name "*.kt" -type f
+        echo ""
+        echo "=== JAVA FILES ==="
+        find . -name "*.java" -type f
+        echo ""
+        echo "=== FILE CONTENTS ==="
+        find . -name "*.kt" -o -name "*.java" | while read f; do
+          echo "=== $f ==="
+          cat "$f"
+          echo ""
+        done
+    
+    - name: Save to repo
+      run: |
+        find . -name "*.kt" -o -name "*.java" | while read f; do
+          echo "=== $f ===" >> ALL_CODE.txt
+          cat "$f" >> ALL_CODE.txt
+        done
+        git add ALL_CODE.txt
+        git config user.name "bot"
+        git config user.email "bot@github.com"
+        git commit -m "Save all code" || echo "No changes"
         git push
