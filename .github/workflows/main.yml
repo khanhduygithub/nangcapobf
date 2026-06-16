@@ -1,0 +1,49 @@
+name: Extract and Analyze Binsecure
+
+on:
+  workflow_dispatch:
+
+jobs:
+  extract:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout your repo
+      uses: actions/checkout@v4
+    
+    - name: Find binscurez.zip
+      run: |
+        find . -name "binscurez.zip" -type f
+    
+    - name: Extract binscurez.zip
+      run: |
+        unzip binscurez.zip -d binscurez/
+    
+    - name: List extracted files
+      run: |
+        tree binscurez/
+    
+    - name: List all Java files
+      run: |
+        find binscurez/ -name "*.java" -o -name "*.kt" -o -name "*.class" -o -name "*.jar"
+    
+    - name: Read key files
+      run: |
+        echo "=== All Java/Kotlin files ==="
+        find binscurez/ -name "*.java" -o -name "*.kt" | while read f; do
+          echo "--- $f ---"
+          cat "$f"
+        done
+    
+    - name: Check for JAR files
+      run: |
+        find binscurez/ -name "*.jar" | while read jar; do
+          echo "--- $jar ---"
+          unzip -l "$jar"
+        done
+    
+    - name: Upload extracted files
+      uses: actions/upload-artifact@v4
+      with:
+        name: binscurez-extracted
+        path: binscurez/
