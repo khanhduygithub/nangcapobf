@@ -1,4 +1,4 @@
-name: Extract Zip
+name: Extract and Show on GitHub
 
 on: [workflow_dispatch]
 
@@ -8,29 +8,14 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     
-    - name: List files
-      run: ls -la
-    
-    - name: Find zip file
-      run: find . -name "*.zip" -type f
-    
     - name: Extract zip
       run: |
-        mkdir -p output
-        find . -name "*.zip" -type f -exec unzip -o {} -d output/ \;
+        unzip -o binscurez.zip -d ./
     
-    - name: List extracted files
-      run: find output/ -type f
-    
-    - name: Show file contents
+    - name: Commit extracted files to repo
       run: |
-        find output/ -name "*.java" -o -name "*.kt" -o -name "*.xml" -o -name "*.txt" | while read f; do
-          echo "=== $f ==="
-          cat "$f"
-        done
-    
-    - name: Upload artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: extracted-files
-        path: output/
+        git config user.name "github-actions"
+        git config user.email "actions@github.com"
+        git add .
+        git commit -m "Extracted files" || echo "No changes"
+        git push
